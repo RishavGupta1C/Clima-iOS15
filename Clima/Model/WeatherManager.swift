@@ -13,7 +13,7 @@ struct WeatherManager {
     
     func fetchWeather(cityName: String) {
         let urlString = "\(weatherURL)&q=\(cityName)"
-        performRequest(urlString: urlString)
+        performRequest(urlString: urlString) // we son't have to write self.performRequest as swift is doing that under the hood
     }
     
     func performRequest(urlString: String) {
@@ -34,9 +34,11 @@ struct WeatherManager {
                     return
                 }
                 
+                //  Passing the data to convert into swift object with properties and methods
                 if let safeData = data {
-                    let dataString = String(data: safeData, encoding: .utf8)
-                    print(dataString!)
+//                    let dataString = String(data: safeData, encoding: .utf8)
+//                    print(dataString!)
+                    self.parseJSON(weatherData: safeData)  //  Inside the closure we must add self if we are calling the method from the current class.
                 }
             }
             //  Error Domain=NSURLErrorDomain Code=-1022 "The resource could not be loaded because the App Transport Security policy requires the use of a secure connection." -> change http to https.
@@ -49,6 +51,10 @@ struct WeatherManager {
             //  The function called is resume as in case of tasks they can be suspended, and newly initialized tasks begin in a suspended state. So resume is used to start the task.
             
         }
+    }
+    
+    func parseJSON(weatherData: Data) {
+        
     }
     
 //    func handle(data: Data?, response: URLResponse?, error: Error?) {
