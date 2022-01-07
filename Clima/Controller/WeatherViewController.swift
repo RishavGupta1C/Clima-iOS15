@@ -26,7 +26,7 @@ class WeatherViewController: UIViewController, UITextFieldDelegate {
     // For the search button
     @IBAction func searchPressed(_ sender: UIButton) {
         searchTextField.endEditing(true) // To collapse the keyboard
-        print(searchTextField.text!)
+//        print(searchTextField.text!)
         // searchTextField.text = ""
     }
     
@@ -34,7 +34,7 @@ class WeatherViewController: UIViewController, UITextFieldDelegate {
     // This function's definititon is present inside UITextFieldDelegate protocol and is called inside UITextField class
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         searchTextField.endEditing(true) // To collapse the keyboard
-        print(searchTextField.text!)
+//        print(searchTextField.text!)
         // searchTextField.text = ""
         return true
     }

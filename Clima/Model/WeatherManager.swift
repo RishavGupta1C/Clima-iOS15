@@ -13,7 +13,7 @@ struct WeatherManager {
     
     func fetchWeather(cityName: String) {
         let urlString = "\(weatherURL)&q=\(cityName)"
-        performRequest(urlString: urlString) // we son't have to write self.performRequest as swift is doing that under the hood
+        performRequest(urlString: urlString) // we don't have to write self.performRequest as swift is doing that under the hood
     }
     
     func performRequest(urlString: String) {
@@ -54,7 +54,17 @@ struct WeatherManager {
     }
     
     func parseJSON(weatherData: Data) {
-        
+        let decoder = JSONDecoder()
+        do {
+            let decodedData = try decoder.decode(WeatherData.self, from: weatherData)
+//            print(decodedData.main.temp)
+//            print(decodedData.main.humidity)
+            let id = decodedData.weather[0].id
+            print(getConditionName(weatherId: id))
+        }
+        catch {
+            print(error)
+        }
     }
     
 //    func handle(data: Data?, response: URLResponse?, error: Error?) {
@@ -69,4 +79,26 @@ struct WeatherManager {
 //        }
 //    }
     
+    func getConditionName(weatherId: Int) -> String {
+        switch(weatherId) {
+        case 200...232:
+            return "cloud.bolt.rain"
+        case 300...321:
+            return "cloud.drizzle"
+        case 500...531:
+            return "cloud.rain"
+        case 600...622:
+            return "snow"
+        case 701...771:
+            return "sun.dust"
+        case 781:
+            return "tornado"
+        case 800:
+            return "sun.max"
+        case 801...804:
+            return "smoke"
+        default:
+            return "cloud"
+        }
+    }
 }
