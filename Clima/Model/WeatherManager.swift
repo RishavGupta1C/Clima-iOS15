@@ -8,8 +8,14 @@
 
 import Foundation
 
+protocol WeatherManagerDelegate {
+    func didUpdateWeather(weather: WeatherModel)
+}
+
 struct WeatherManager {
     let weatherURL = "https://api.openweathermap.org/data/2.5/weather?appid=aff032acfe3743859fbbf730d5714b0d&units=metric"
+    
+    var delegate:  WeatherManagerDelegate?
     
     func fetchWeather(cityName: String) {
         let urlString = "\(weatherURL)&q=\(cityName)"
@@ -35,10 +41,18 @@ struct WeatherManager {
                 }
                 
                 //  Passing the data to convert into swift object with properties and methods
-                if let safeData = data {
+                if let safeData = data {    // optional bind safeData
 //                    let dataString = String(data: safeData, encoding: .utf8)
 //                    print(dataString!)
-                    self.parseJSON(weatherData: safeData)  //  Inside the closure we must add self if we are calling the method from the current class.
+                    if let weather = self.parseJSON(weatherData: safeData){  //  Inside the closure we must add self if we are calling the method from the current class.
+                        
+                        // The below code will make WeatherManager single use as it is dependent on WeatherViewController
+//                        let weatherVC = WeatherViewController()
+//                        weatherVC.didUpdateWeather(weather: weather)
+                        
+                        // Using Delegate Pattern
+                        self.delegate?.didUpdateWeather(weather: weather)   // we need self since we are inside a closure (session.dataTask closure)
+                    }
                 }
             }
             //  Error Domain=NSURLErrorDomain Code=-1022 "The resource could not be loaded because the App Transport Security policy requires the use of a secure connection." -> change http to https.
@@ -53,17 +67,24 @@ struct WeatherManager {
         }
     }
     
-    func parseJSON(weatherData: Data) {
+    func parseJSON(weatherData: Data) -> WeatherModel?{
         let decoder = JSONDecoder()
         do {
             let decodedData = try decoder.decode(WeatherData.self, from: weatherData)
-//            print(decodedData.main.temp)
-//            print(decodedData.main.humidity)
+            let temp = decodedData.main.temp
+            let name = decodedData.name
             let id = decodedData.weather[0].id
-            print(getConditionName(weatherId: id))
+            
+            let weather = WeatherModel(conditionId: id, cityName: name, temperature: temp)
+            return weather
+            
+//            print(weather.getConditionName(weatherId: id))
+//            print(weather.conditionName)
+//            print(weather.temperatureString)
         }
         catch {
             print(error)
+            return nil
         }
     }
     
@@ -79,26 +100,5 @@ struct WeatherManager {
 //        }
 //    }
     
-    func getConditionName(weatherId: Int) -> String {
-        switch(weatherId) {
-        case 200...232:
-            return "cloud.bolt.rain"
-        case 300...321:
-            return "cloud.drizzle"
-        case 500...531:
-            return "cloud.rain"
-        case 600...622:
-            return "snow"
-        case 701...771:
-            return "sun.dust"
-        case 781:
-            return "tornado"
-        case 800:
-            return "sun.max"
-        case 801...804:
-            return "smoke"
-        default:
-            return "cloud"
-        }
-    }
+    
 }

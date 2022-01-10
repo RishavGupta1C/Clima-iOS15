@@ -8,13 +8,13 @@
 
 import Foundation
 
-struct WeatherData: Decodable {     //  weatherData can decode itself from external representation namely JSON representation
+struct WeatherData: Codable {     //  weatherData can decode itself from external representation namely JSON representation
     let name: String
     let main: Main
     let weather: [Weather]
 }
 
-struct Main: Decodable {
+struct Main: Codable {
     let temp: Double
     let feels_like: Double
     let temp_min: Double
@@ -23,7 +23,7 @@ struct Main: Decodable {
     let humidity: Int
 }
 
-struct Weather: Decodable {
+struct Weather: Codable {
     let id: Int
     let description: String
 }
