@@ -20,8 +20,8 @@ class WeatherViewController: UIViewController, UITextFieldDelegate, WeatherManag
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        weatherManager.delegate = self
-        searchTextField.delegate = self
+        weatherManager.delegate = self  // for WeatherManagerDelegate
+        searchTextField.delegate = self // for UITextField Delegate
     }
 
     // For the search button
@@ -60,9 +60,18 @@ class WeatherViewController: UIViewController, UITextFieldDelegate, WeatherManag
 //        weatherManager.fetchWeather(cityName: searchTextField.text!)
         searchTextField.text = ""
     }
+
+// By convention, we always have identity of the object that caused this delegate method in the delegate method
+    func didUpdateWeather(_ weatherManager: WeatherManager, weather: WeatherModel) {
+        // Dispatch the call to update the label text to the main thread
+        DispatchQueue.main.async { // since it is a closure we have to add self
+            self.temperatureLabel.text = weather.temperatureString
+            self.conditionImageView.image = UIImage(systemName: weather.conditionName)
+        }
+    }
     
-    func didUpdateWeather(weather: WeatherModel) {
-        print(weather.temperature)
+    func didFailWithError(_ error: Error) {
+        print(error)
     }
 }
 

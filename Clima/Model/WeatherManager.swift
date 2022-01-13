@@ -9,7 +9,9 @@
 import Foundation
 
 protocol WeatherManagerDelegate {
-    func didUpdateWeather(weather: WeatherModel)
+    func didUpdateWeather(_ weatherManager: WeatherManager, weather: WeatherModel)
+    // delegate method to help us pass errors out of our weather manager
+    func didFailWithError(_ error: Error)
 }
 
 struct WeatherManager {
@@ -19,10 +21,10 @@ struct WeatherManager {
     
     func fetchWeather(cityName: String) {
         let urlString = "\(weatherURL)&q=\(cityName)"
-        performRequest(urlString: urlString) // we don't have to write self.performRequest as swift is doing that under the hood
+        performRequest(with: urlString) // we don't have to write self.performRequest as swift is doing that under the hood
     }
     
-    func performRequest(urlString: String) {
+    func performRequest(with urlString: String) {
             //  4 steps of networking
             //  1. Create a URL
         if let url = URL(string: urlString) {   // if-let unwrapping as url is optional as url can be nil
@@ -36,7 +38,8 @@ struct WeatherManager {
             
             let task = session.dataTask(with: url) { data, response, error in
                 if error != nil {
-                    print("The Error is \(error!)")
+//                    print("The Error is \(error!)")
+                    self.delegate?.didFailWithError(error!)
                     return
                 }
                 
@@ -44,14 +47,15 @@ struct WeatherManager {
                 if let safeData = data {    // optional bind safeData
 //                    let dataString = String(data: safeData, encoding: .utf8)
 //                    print(dataString!)
-                    if let weather = self.parseJSON(weatherData: safeData){  //  Inside the closure we must add self if we are calling the method from the current class.
+                    if let weather = self.parseJSON(safeData){  //  Inside the closure we must add self if we are calling the method from the current class.
                         
                         // The below code will make WeatherManager single use as it is dependent on WeatherViewController
 //                        let weatherVC = WeatherViewController()
 //                        weatherVC.didUpdateWeather(weather: weather)
                         
+                        
                         // Using Delegate Pattern
-                        self.delegate?.didUpdateWeather(weather: weather)   // we need self since we are inside a closure (session.dataTask closure)
+                        self.delegate?.didUpdateWeather(self, weather: weather)   // we need self since we are inside a closure (session.dataTask closure)
                     }
                 }
             }
@@ -67,7 +71,7 @@ struct WeatherManager {
         }
     }
     
-    func parseJSON(weatherData: Data) -> WeatherModel?{
+    func parseJSON(_ weatherData: Data) -> WeatherModel?{
         let decoder = JSONDecoder()
         do {
             let decodedData = try decoder.decode(WeatherData.self, from: weatherData)
@@ -83,7 +87,8 @@ struct WeatherManager {
 //            print(weather.temperatureString)
         }
         catch {
-            print(error)
+//            print(error)
+            delegate?.didFailWithError(error)
             return nil
         }
     }
